@@ -96,6 +96,18 @@ variable "disk_device_xvdb" {
   description = "The disk device that will be monitored"
 }
 
+variable "disk_device_mount" {
+  type        = "string"
+  default     = "/"
+  description = "The disk device that will be monitored"
+}
+
+variable "disk_device_mount_xvdb" {
+  type        = "string"
+  default     = "/xvdb"
+  description = "The disk device that will be monitored"
+}
+
 variable "disk_usage_thresholds" {
   type = "map"
 

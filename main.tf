@@ -457,7 +457,7 @@ module "monitor_disk_usage_xvdb" {
   timeboard_id   = "${join(",", datadog_timeboard.system.*.id)}"
 
   name               = "${var.product_domain} - ${var.cluster} - ${var.environment} - Disk Usage is High on IP: {{ host.ip }} Name: {{ host.name }}"
-  query              = "avg(last_5m):avg:system.disk.in_use{cluster:${var.cluster}, environment:${var.environment}, device:${var.disk_device_xvdb}, device:${var.disk_device_xvdb_mount}} by {host,device} * 100  >= ${var.disk_usage_thresholds["critical"]}"
+  query              = "avg(last_5m):avg:system.disk.in_use{cluster:${var.cluster}, environment:${var.environment}, device:${var.disk_device_xvdb}, device:${var.disk_device_mount_xvdb}} by {host,device} * 100  >= ${var.disk_usage_thresholds["critical"]}"
   thresholds         = "${var.disk_usage_thresholds}"
   message            = "${var.disk_usage_message}"
   escalation_message = "${var.disk_usage_escalation_message}"

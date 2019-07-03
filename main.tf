@@ -26,6 +26,12 @@ resource "datadog_timeboard" "system" {
     prefix  = "device"
   }
 
+  template_variable {
+      default = "${var.disk_device_xvdb}"
+      name    = "disk_device_xvdb"
+      prefix  = "device"
+    }
+
   graph {
     title     = "CPU Utilization (Rollup: max)"
     viz       = "timeseries"
@@ -96,6 +102,41 @@ resource "datadog_timeboard" "system" {
       type       = "line"
     }
   }
+
+  graph {
+      title     = "Free Disk xvdb"
+      viz       = "timeseries"
+      autoscale = true
+
+      request {
+        q    = "avg:system.disk.free{$cluster, $environment, $disk_device_xvdb} by {host,device}"
+        type = "line"
+      }
+    }
+
+    graph {
+      title     = "% Disk in Use xvdb"
+      viz       = "timeseries"
+      autoscale = true
+
+      request {
+        q          = "avg:system.disk.in_use{$cluster, $environment, $disk_device_xvdb} by {host,device} * 100"
+        aggregator = "avg"
+        type       = "line"
+      }
+    }
+
+    graph {
+      title     = "% Disk Inodes in Use xvdb"
+      viz       = "timeseries"
+      autoscale = true
+
+      request {
+        q          = "avg:system.fs.inodes.in_use{$cluster, $environment, $disk_device_xvdb} by {host,device} * 100"
+        aggregator = "avg"
+        type       = "line"
+      }
+    }
 
   graph {
     title     = "% Open Files in Use"
@@ -381,6 +422,30 @@ module "monitor_disk_usage" {
 
   name               = "${var.product_domain} - ${var.cluster} - ${var.environment} - Disk Usage is High on IP: {{ host.ip }} Name: {{ host.name }}"
   query              = "avg(last_5m):avg:system.disk.in_use{cluster:${var.cluster}, environment:${var.environment}, device:${var.disk_device}} by {host,device} * 100  >= ${var.disk_usage_thresholds["critical"]}"
+  thresholds         = "${var.disk_usage_thresholds}"
+  message            = "${var.disk_usage_message}"
+  escalation_message = "${var.disk_usage_escalation_message}"
+
+  recipients         = "${var.recipients}"
+  alert_recipients   = "${var.alert_recipients}"
+  warning_recipients = "${var.warning_recipients}"
+
+  renotify_interval = "${var.renotify_interval}"
+  notify_audit      = "${var.notify_audit}"
+}
+
+module "monitor_disk_usage_xvdb" {
+  source  = "github.com/traveloka/terraform-datadog-monitor"
+  enabled = "${local.monitor_enabled}"
+
+  product_domain = "${var.product_domain}"
+  service        = "${var.service}"
+  environment    = "${var.environment}"
+  tags           = "${var.tags}"
+  timeboard_id   = "${join(",", datadog_timeboard.system.*.id)}"
+
+  name               = "${var.product_domain} - ${var.cluster} - ${var.environment} - Disk Usage is High on IP: {{ host.ip }} Name: {{ host.name }}"
+  query              = "avg(last_5m):avg:system.disk.in_use{cluster:${var.cluster}, environment:${var.environment}, device:${var.disk_device_xvdb}} by {host,device} * 100  >= ${var.disk_usage_thresholds["critical"]}"
   thresholds         = "${var.disk_usage_thresholds}"
   message            = "${var.disk_usage_message}"
   escalation_message = "${var.disk_usage_escalation_message}"

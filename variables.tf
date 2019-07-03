@@ -86,7 +86,13 @@ variable "cpu_usage_escalation_message" {
 
 variable "disk_device" {
   type        = "string"
-  default     = "/dev/xvda1"
+  default     = "/dev/sda1"
+  description = "The disk device that will be monitored"
+}
+
+variable "disk_device_xvdb" {
+  type        = "string"
+  default     = "/dev/xvdb"
   description = "The disk device that will be monitored"
 }
 
